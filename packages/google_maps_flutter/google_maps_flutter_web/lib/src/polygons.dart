@@ -30,15 +30,21 @@ class PolygonsController extends GeometryController {
   }
 
   void _addPolygon(Polygon polygon) {
-    final gmaps.PolygonOptions polygonOptions =
-        _polygonOptionsFromPolygon(googleMap, polygon);
-    final gmaps.Polygon gmPolygon = gmaps.Polygon(polygonOptions)
-      ..map = googleMap;
+    final gmaps.PolygonOptions polygonOptions = _polygonOptionsFromPolygon(googleMap, polygon);
+    final gmaps.Polygon gmPolygon = gmaps.Polygon(polygonOptions)..map = googleMap;
     final PolygonController controller = PolygonController(
         polygon: gmPolygon,
         consumeTapEvents: polygon.consumeTapEvents,
-        onTap: () {
+        onTap: (gmaps.PolyMouseEvent event) {
+          _streamController.add(
+            MapTapEvent(mapId, _gmLatLngToLatLng(event.latLng!)),
+          );
           _onPolygonTap(polygon.polygonId);
+        },
+        onLongPress: (gmaps.PolyMouseEvent event) {
+          _streamController.add(
+            MapLongPressEvent(mapId, _gmLatLngToLatLng(event.latLng!)),
+          );
         });
     _polygonIdToController[polygon.polygonId] = controller;
   }
@@ -49,8 +55,7 @@ class PolygonsController extends GeometryController {
   }
 
   void _changePolygon(Polygon polygon) {
-    final PolygonController? polygonController =
-        _polygonIdToController[polygon.polygonId];
+    final PolygonController? polygonController = _polygonIdToController[polygon.polygonId];
     polygonController?.update(_polygonOptionsFromPolygon(googleMap, polygon));
   }
 
@@ -61,8 +66,7 @@ class PolygonsController extends GeometryController {
 
   // Removes a polygon and its controller by its [PolygonId].
   void _removePolygon(PolygonId polygonId) {
-    final PolygonController? polygonController =
-        _polygonIdToController[polygonId];
+    final PolygonController? polygonController = _polygonIdToController[polygonId];
     polygonController?.remove();
     _polygonIdToController.remove(polygonId);
   }

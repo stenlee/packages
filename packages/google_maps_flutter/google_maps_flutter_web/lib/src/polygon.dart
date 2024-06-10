@@ -10,14 +10,23 @@ class PolygonController {
   PolygonController({
     required gmaps.Polygon polygon,
     bool consumeTapEvents = false,
-    VoidCallback? onTap,
+    ArgumentCallback<gmaps.PolyMouseEvent>? onTap,
+    ArgumentCallback<gmaps.PolyMouseEvent>? onLongPress,
   })  : _polygon = polygon,
         _consumeTapEvents = consumeTapEvents {
-    if (onTap != null) {
-      polygon.onClick.listen((gmaps.PolyMouseEvent event) {
-        onTap.call();
-      });
-    }
+    // if (onTap != null) {
+    //   polygon.onClick.listen((gmaps.PolyMouseEvent event) {
+    //     onTap.call();
+    //   });
+    // }
+    polygon.onClick.listen((gmaps.PolyMouseEvent event) {
+      print("polygon onClick click");
+      onTap!.call(event);
+    });
+    polygon.onRightclick.listen((gmaps.PolyMouseEvent event) {
+      print("polygon right click");
+      onLongPress!.call(event);
+    });
   }
 
   gmaps.Polygon? _polygon;

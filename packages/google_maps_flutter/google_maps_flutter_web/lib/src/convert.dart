@@ -6,8 +6,7 @@ part of '../google_maps_flutter_web.dart';
 
 // Default values for when the gmaps objects return null/undefined values.
 final gmaps.LatLng _nullGmapsLatLng = gmaps.LatLng(0, 0);
-final gmaps.LatLngBounds _nullGmapsLatLngBounds =
-    gmaps.LatLngBounds(_nullGmapsLatLng, _nullGmapsLatLng);
+final gmaps.LatLngBounds _nullGmapsLatLngBounds = gmaps.LatLngBounds(_nullGmapsLatLng, _nullGmapsLatLng);
 
 // Converts a [Color] into a valid CSS value #RRGGBB.
 String _getCssColor(Color color) {
@@ -35,16 +34,14 @@ double _getCssOpacity(Color color) {
 // indoorViewEnabled seems to not have an equivalent in web
 // buildingsEnabled seems to not have an equivalent in web
 // padding seems to behave differently in web than mobile. You can't move UI elements in web.
-gmaps.MapOptions _configurationAndStyleToGmapsOptions(
-    MapConfiguration configuration, List<gmaps.MapTypeStyle> styles) {
+gmaps.MapOptions _configurationAndStyleToGmapsOptions(MapConfiguration configuration, List<gmaps.MapTypeStyle> styles) {
   final gmaps.MapOptions options = gmaps.MapOptions();
 
   if (configuration.mapType != null) {
     options.mapTypeId = _gmapTypeIDForPluginType(configuration.mapType!);
   }
 
-  final MinMaxZoomPreference? zoomPreference =
-      configuration.minMaxZoomPreference;
+  final MinMaxZoomPreference? zoomPreference = configuration.minMaxZoomPreference;
   if (zoomPreference != null) {
     options
       ..minZoom = zoomPreference.minZoom
@@ -62,8 +59,7 @@ gmaps.MapOptions _configurationAndStyleToGmapsOptions(
 
   if (configuration.webGestureHandling != null) {
     options.gestureHandling = configuration.webGestureHandling!.name;
-  } else if (configuration.scrollGesturesEnabled == false ||
-      configuration.zoomGesturesEnabled == false) {
+  } else if (configuration.scrollGesturesEnabled == false || configuration.zoomGesturesEnabled == false) {
     // Old behavior
     options.gestureHandling = WebGestureHandling.none.name;
   } else {
@@ -115,8 +111,7 @@ gmaps.MapOptions _applyInitialPosition(
 ) {
   // Adjust the initial position, if passed...
   options.zoom = initialPosition.zoom;
-  options.center = gmaps.LatLng(
-      initialPosition.target.latitude, initialPosition.target.longitude);
+  options.center = gmaps.LatLng(initialPosition.target.latitude, initialPosition.target.longitude);
   return options;
 }
 
@@ -137,15 +132,11 @@ List<gmaps.MapTypeStyle> _mapStyles(String? mapStyleJson) {
   List<gmaps.MapTypeStyle> styles = <gmaps.MapTypeStyle>[];
   if (mapStyleJson != null) {
     try {
-      styles =
-          (json.decode(mapStyleJson, reviver: (Object? key, Object? value) {
+      styles = (json.decode(mapStyleJson, reviver: (Object? key, Object? value) {
         if (value is Map && _isJsonMapStyle(value as Map<String, Object?>)) {
           List<MapStyler> stylers = <MapStyler>[];
           if (value['stylers'] != null) {
-            stylers = (value['stylers']! as List<Object?>)
-                .whereType<Map<String, Object?>>()
-                .map(MapStyler.fromJson)
-                .toList();
+            stylers = (value['stylers']! as List<Object?>).whereType<Map<String, Object?>>().map(MapStyler.fromJson).toList();
           }
           return gmaps.MapTypeStyle()
             ..elementType = value['elementType'] as String?
@@ -154,9 +145,9 @@ List<gmaps.MapTypeStyle> _mapStyles(String? mapStyleJson) {
         }
         return value;
       }) as List<Object?>)
-              .where((Object? element) => element != null)
-              .cast<gmaps.MapTypeStyle>()
-              .toList();
+          .where((Object? element) => element != null)
+          .cast<gmaps.MapTypeStyle>()
+          .toList();
       // .toList calls are required so the JS API understands the underlying data structure.
     } on FormatException catch (e) {
       throw MapStyleException(e.message);
@@ -205,25 +196,21 @@ gmaps.InfoWindowOptions? _infoWindowOptionsFromMarker(Marker marker) {
 
   // Add an outer wrapper to the contents of the infowindow, we need it to listen
   // to click events...
-  final HTMLElement container = createDivElement()
-    ..id = 'gmaps-marker-${marker.markerId.value}-infowindow';
+  final HTMLElement container = createDivElement()..id = 'gmaps-marker-${marker.markerId.value}-infowindow';
 
   if (markerTitle.isNotEmpty) {
-    final HTMLHeadingElement title =
-        (document.createElement('h3') as HTMLHeadingElement)
-          ..className = 'infowindow-title'
-          ..innerText = markerTitle;
+    final HTMLHeadingElement title = (document.createElement('h3') as HTMLHeadingElement)
+      ..className = 'infowindow-title'
+      ..innerText = markerTitle;
     container.appendChild(title);
   }
   if (markerSnippet.isNotEmpty) {
-    final HTMLElement snippet = createDivElement()
-      ..className = 'infowindow-snippet';
+    final HTMLElement snippet = createDivElement()..className = 'infowindow-snippet';
 
     // Firefox and Safari don't support Trusted Types yet.
     // See https://developer.mozilla.org/en-US/docs/Web/API/TrustedTypePolicyFactory#browser_compatibility
     if (window.nullableTrustedTypes != null) {
-      final GoogleMapsTrustedTypePolicy trustedTypePolicy =
-          window.nullableTrustedTypes!.getGoogleMapsTrustedTypesPolicy(
+      final GoogleMapsTrustedTypePolicy trustedTypePolicy = window.nullableTrustedTypes!.getGoogleMapsTrustedTypesPolicy(
         GoogleMapsTrustedTypePolicyOptions(
           createHTML: (String html, JSAny? arguments) {
             return sanitizeHtml(html);
@@ -231,8 +218,7 @@ gmaps.InfoWindowOptions? _infoWindowOptionsFromMarker(Marker marker) {
         ),
       );
 
-      snippet.trustedInnerHTML =
-          trustedTypePolicy.createHTML(markerSnippet, null);
+      snippet.trustedInnerHTML = trustedTypePolicy.createHTML(markerSnippet, null);
     } else {
       // `sanitizeHtml` is used to clean the (potential) user input from (potential)
       // XSS attacks through the contents of the marker InfoWindow.
@@ -277,14 +263,14 @@ gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
     assert(iconConfig.length >= 2);
     // iconConfig[2] contains the DPIs of the screen, but that information is
     // already encoded in the iconConfig[1]
-    icon = gmaps.Icon()
-      ..url = ui_web.assetManager.getAssetUrl(iconConfig[1]! as String);
+    icon = gmaps.Icon()..url = ui_web.assetManager.getAssetUrl(iconConfig[1]! as String);
 
     final gmaps.Size? size = _gmSizeFromIconConfig(iconConfig, 3);
     if (size != null) {
       icon
         ..size = size
-        ..scaledSize = size;
+        ..scaledSize = size
+        ..anchor = gmaps.Point(size.width! / 2, size.height! / 2);
     }
   } else if (iconConfig[0] == 'fromBytes') {
     // Grab the bytes, and put them into a blob
@@ -307,7 +293,8 @@ gmaps.Icon? _gmIconFromBitmapDescriptor(BitmapDescriptor bitmapDescriptor) {
     if (size != null) {
       icon
         ..size = size
-        ..scaledSize = size;
+        ..scaledSize = size
+        ..anchor = gmaps.Point(size.width! / 2, size.height! / 2);
     }
   }
 
@@ -325,6 +312,7 @@ gmaps.MarkerOptions _markerOptionsFromMarker(
       marker.position.latitude,
       marker.position.longitude,
     )
+    // ..anchorPoint = gmaps.Point(marker.anchor.dx, marker.anchor.dy)
     ..title = sanitizeHtml(marker.infoWindow.title ?? '')
     ..zIndex = marker.zIndex
     ..visible = marker.visible
@@ -349,11 +337,9 @@ gmaps.CircleOptions _circleOptionsFromCircle(Circle circle) {
   return circleOptions;
 }
 
-gmaps.PolygonOptions _polygonOptionsFromPolygon(
-    gmaps.GMap googleMap, Polygon polygon) {
+gmaps.PolygonOptions _polygonOptionsFromPolygon(gmaps.GMap googleMap, Polygon polygon) {
   // Convert all points to GmLatLng
-  final List<gmaps.LatLng> path =
-      polygon.points.map(_latLngToGmLatLng).toList();
+  final List<gmaps.LatLng> path = polygon.points.map(_latLngToGmLatLng).toList();
 
   final bool isClockwisePolygon = _isPolygonClockwise(path);
 
@@ -417,17 +403,13 @@ List<gmaps.LatLng> _ensureHoleHasReverseWinding(
 bool _isPolygonClockwise(List<gmaps.LatLng> path) {
   double direction = 0.0;
   for (int i = 0; i < path.length; i++) {
-    direction = direction +
-        ((path[(i + 1) % path.length].lat - path[i].lat) *
-            (path[(i + 1) % path.length].lng + path[i].lng));
+    direction = direction + ((path[(i + 1) % path.length].lat - path[i].lat) * (path[(i + 1) % path.length].lng + path[i].lng));
   }
   return direction >= 0;
 }
 
-gmaps.PolylineOptions _polylineOptionsFromPolyline(
-    gmaps.GMap googleMap, Polyline polyline) {
-  final List<gmaps.LatLng> paths =
-      polyline.points.map(_latLngToGmLatLng).toList();
+gmaps.PolylineOptions _polylineOptionsFromPolyline(gmaps.GMap googleMap, Polyline polyline) {
+  final List<gmaps.LatLng> paths = polyline.points.map(_latLngToGmLatLng).toList();
 
   return gmaps.PolylineOptions()
     ..path = paths
@@ -493,14 +475,12 @@ void _applyCameraUpdate(gmaps.GMap map, CameraUpdate update) {
       gmaps.LatLng? focusLatLng;
       final double zoomDelta = json[1] as double? ?? 0;
       // Web only supports integer changes...
-      final int newZoomDelta =
-          zoomDelta < 0 ? zoomDelta.floor() : zoomDelta.ceil();
+      final int newZoomDelta = zoomDelta < 0 ? zoomDelta.floor() : zoomDelta.ceil();
       if (json.length == 3) {
         final List<Object?> latLng = asJsonList(json[2]);
         // With focus
         try {
-          focusLatLng =
-              _pixelToLatLng(map, latLng[0]! as int, latLng[1]! as int);
+          focusLatLng = _pixelToLatLng(map, latLng[0]! as int, latLng[1]! as int);
         } catch (e) {
           // https://github.com/a14n/dart-google-maps/issues/87
           // print('Error computing new focus LatLng. JS Error: ' + e.toString());
@@ -527,12 +507,9 @@ gmaps.LatLng _pixelToLatLng(gmaps.GMap map, int x, int y) {
   final gmaps.Projection? projection = map.projection;
   final num? zoom = map.zoom;
 
-  assert(
-      bounds != null, 'Map Bounds required to compute LatLng of screen x/y.');
-  assert(projection != null,
-      'Map Projection required to compute LatLng of screen x/y');
-  assert(zoom != null,
-      'Current map zoom level required to compute LatLng of screen x/y');
+  assert(bounds != null, 'Map Bounds required to compute LatLng of screen x/y.');
+  assert(projection != null, 'Map Projection required to compute LatLng of screen x/y');
+  assert(zoom != null, 'Current map zoom level required to compute LatLng of screen x/y');
 
   final gmaps.LatLng ne = bounds!.northEast;
   final gmaps.LatLng sw = bounds.southWest;
@@ -542,8 +519,7 @@ gmaps.LatLng _pixelToLatLng(gmaps.GMap map, int x, int y) {
 
   final int scale = 1 << (zoom!.toInt()); // 2 ^ zoom
 
-  final gmaps.Point point =
-      gmaps.Point((x / scale) + bottomLeft.x!, (y / scale) + topRight.y!);
+  final gmaps.Point point = gmaps.Point((x / scale) + bottomLeft.x!, (y / scale) + topRight.y!);
 
   return projection.fromPointToLatLng!(point)!;
 }
